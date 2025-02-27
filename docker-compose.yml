@@ -1,0 +1,101 @@
+services:
+  db:
+    image: mariadb:latest
+    container_name: mariadb
+    env_file:
+      - .env
+    environment:
+      - MARIADB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MARIADB_DATABASE=${DB_DATABASE}
+      - MARIADB_USER=${DB_USER}
+      - MARIADB_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - backend
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    env_file:
+      - .env
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGO_DATABASE}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - backend
+  ticket-logger-api:
+    build:
+      context: ./dwese-ticket-logger-api
+    container_name: ticket-logger-api
+    env_file:
+      - .env
+    ports:
+      - "8083:8080"
+      - "5083:5005"
+    volumes:
+      - ./dwese-ticket-logger-api/uploads:/app/images/
+      - ./dwese-ticket-logger-api/keystore:/app/keystore/
+      - ./.env:/app/.env
+    depends_on:
+      - mongodb
+      - db
+    networks:
+      - backend
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - backend
+  gateway:
+    build:
+      context: ./dwese-api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+      - "5080:5005"
+    volumes:
+      - ./dwese-ticket-logger-api/keystore:/app/keystore/
+      - ./.env:/app/.env
+    depends_on:
+      - ticket-logger-api
+    networks:
+      - backend
+  auth-service:
+    build:
+      context: ./dwese-auth-service
+    container_name: auth-service
+    ports:
+      - "8081:8080"
+      - "5081:5005"
+    volumes:
+      - ./dwese-ticket-logger-api/keystore:/app/keystore/
+      - ./.env:/app/.env
+    depends_on:
+      - db
+      - rabbitmq
+    networks:
+      - backend
+volumes:
+  db_data:
+  mongo_data:
+
+networks:
+  backend:
