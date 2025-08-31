@@ -17,50 +17,39 @@ import java.util.List;
 @Component
 public class JwtAuthFilter implements WebFilter {
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    @Autowired JwtUtil jwtUtil;
 
-    private static final List<String> PUBLIC_URLS = List.of(
-            "/api/v1/auth/authenticate",
-            "/api/v1/auth/register"
-    );
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        ServerHttpRequest request=exchange.getRequest();
+        String path = exchange.getRequest().getURI().getPath();
 
-        if(PUBLIC_URLS.stream().anyMatch(url-> request.getURI().getPath().startsWith(url))){
+        // Rutas libres
+        if (path.startsWith("/api/v1/auth/") || path.startsWith("/ws")) {
             return chain.filter(exchange);
         }
-        String authHeader= request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if(authHeader==null || !authHeader.startsWith("Bearer ")){
-            return unauthorized(exchange, "Token no encontrado o mal formado");
-        }
-        String token = authHeader.substring(7);
 
-        String username;
-        try {
-            username=jwtUtil.extractUsername(token);
-        }catch (Exception e){
-            return unauthorized(exchange, "Token invalido: "+ e.getMessage());
+        String auth = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (auth == null || !auth.startsWith("Bearer ")) {
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
         }
 
-        if(!jwtUtil.validateToken(token, username)){
-            return unauthorized(exchange, "Token expirado o inválido");
+        String token = auth.substring(7);
+        String username = jwtUtil.extractUsername(token);
+        if (!jwtUtil.validateToken(token, username)) {
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
         }
 
         Claims claims = jwtUtil.extractAllClaims(token);
+        @SuppressWarnings("unchecked")
+        List<String> roles = claims.get("roles", List.class);
 
-        List<String> roles= claims.get("roles", List.class);
-
-        ServerHttpRequest modifiedRequest= exchange.getRequest().mutate()
+        ServerHttpRequest withHeaders = exchange.getRequest().mutate()
                 .header("X-Authenticated-User", username)
                 .header("X-Authenticated-Roles", String.join(",", roles))
                 .build();
-        return chain.filter(exchange.mutate().request(modifiedRequest).build());
-    }
 
-    private Mono<Void> unauthorized(ServerWebExchange exchange, String mensaje){
-        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-        return exchange.getResponse().setComplete();
+        return chain.filter(exchange.mutate().request(withHeaders).build());
     }
 }
