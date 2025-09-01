@@ -1,6 +1,6 @@
 # 🧾 Microservicios Ticket Logger
 
-Este proyecto implementa una **arquitectura de microservicios** para la gestión de tickets de incidencias en un supermercado.  
+Este proyecto implementa una **arquitectura de microservicios** para la gestión de tickets en un supermercado.  
 Está desarrollado en **Java + Spring Boot**, siguiendo principios de escalabilidad y separación de responsabilidades.
 
 ---
@@ -14,7 +14,7 @@ Está desarrollado en **Java + Spring Boot**, siguiendo principios de escalabili
   Servicio encargado de la **autenticación y autorización** de usuarios (JWT).
 
 - **`dwese-ticket-logger-api/`**  
-  Microservicio principal que permite **crear, consultar y gestionar tickets** de incidencias.
+  Microservicio principal que permite **crear, consultar y gestionar tickets** .
 
 - **`docker-compose.yml`**  
   Orquestador que levanta todos los microservicios y dependencias necesarias en contenedores Docker.
@@ -39,11 +39,12 @@ Está desarrollado en **Java + Spring Boot**, siguiendo principios de escalabili
    ```bash
    git clone https://github.com/ImanolTB/microservicios-ticket-logger.git
    cd microservicios-ticket-logger
-   
+   ```
 2. Levantar los servicios con Docker:
   ```bash
   docker-compose up --build
-
+  ```
 3. Acceder a los endpoints a través del API Gateway:
   ```bash
   http://localhost:8080
+  ```
