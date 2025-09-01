@@ -39,13 +39,13 @@ Está desarrollado en **Java + Spring Boot**, siguiendo principios de escalabili
    ```bash
    git clone https://github.com/ImanolTB/microservicios-ticket-logger.git
    cd microservicios-ticket-logger
-Levantar los servicios con Docker:
+   
+2. Levantar los servicios con Docker:
 
-```bash
-Copiar código
+  ```bash
 docker-compose up --build
-Acceder a los endpoints a través del API Gateway:
+
+3. Acceder a los endpoints a través del API Gateway:
 
 ```bash
-Copiar código
 http://localhost:8080
