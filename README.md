@@ -42,8 +42,9 @@ Está desarrollado en **Java + Spring Boot**, siguiendo principios de escalabili
    
 2. Levantar los servicios con Docker:
   ```bash
-docker-compose up --build
+  docker-compose up --build
+
 
 3. Acceder a los endpoints a través del API Gateway:
-```bash
-http://localhost:8080
+  ```bash
+  http://localhost:8080
