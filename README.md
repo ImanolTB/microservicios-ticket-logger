@@ -41,11 +41,11 @@ Está desarrollado en **Java + Spring Boot**, siguiendo principios de escalabili
    cd microservicios-ticket-logger
 Levantar los servicios con Docker:
 
-bash
+```bash
 Copiar código
 docker-compose up --build
 Acceder a los endpoints a través del API Gateway:
 
-arduino
+```bash
 Copiar código
 http://localhost:8080
